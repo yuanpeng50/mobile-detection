@@ -32,7 +32,7 @@ def _validate_label_map(label_map):
     ValueError: if label map is invalid.
   """
   for item in label_map.item:
-    if item.id < 0:
+    if item.id < 1:
       raise ValueError('Label map ids should be >= 1.')
 
 
@@ -113,7 +113,7 @@ def load_labelmap(path):
   Returns:
     a StringIntLabelMapProto
   """
-  with tf.gfile.GFile(path, 'rb') as fid:
+  with tf.gfile.GFile(path, 'r') as fid:
     label_map_string = fid.read()
     label_map = string_int_label_map_pb2.StringIntLabelMap()
     try:

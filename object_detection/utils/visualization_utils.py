@@ -19,7 +19,6 @@ These functions often receive an image, perform some visualization on the image.
 The functions do not return a value, instead they modify the image itself.
 
 """
-#coding=utf-8
 import collections
 import functools
 import matplotlib.pyplot as plt
@@ -30,11 +29,6 @@ import PIL.ImageDraw as ImageDraw
 import PIL.ImageFont as ImageFont
 import six
 import tensorflow as tf
-from pylab import mpl
-
-mpl.rcParams['font.sans-serif'] = ['FangSong'] # 指定默认字体
-mpl.rcParams['axes.unicode_minus'] = False # 解决保存图像是负号'-'显示为方块的问题
-
 
 
 _TITLE_LEFT_MARGIN = 10
@@ -167,14 +161,13 @@ def draw_bounding_box_on_image(image,
   draw.line([(left, top), (left, bottom), (right, bottom),
              (right, top), (left, top)], width=thickness, fill=color)
   try:
-    font = ImageFont.truetype('simfang.ttf', 24,encoding="unic")
+    font = ImageFont.truetype('arial.ttf', 24)
   except IOError:
     font = ImageFont.load_default()
 
   # If the total height of the display strings added to the top of the bounding
   # box exceeds the top of the image, stack the strings below the bounding box
   # instead of above.
-  #print(display_str_list)
   display_str_heights = [font.getsize(ds)[1] for ds in display_str_list]
   # Each display_str has a top and bottom margin of 0.05x.
   total_display_str_height = (1 + 2 * 0.05) * sum(display_str_heights)
@@ -455,7 +448,7 @@ def visualize_boxes_and_labels_on_image_array(image,
       else:
         if not agnostic_mode:
           if classes[i] in category_index.keys():
-            class_name = category_index[classes[i]]['vehicle_name']
+            class_name = category_index[classes[i]]['name']
           else:
             class_name = 'N/A'
           display_str = '{}: {}%'.format(
