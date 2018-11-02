@@ -31,7 +31,6 @@ from nets import resnet_v1
 from nets import resnet_v2
 from nets import vgg
 from nets.nasnet import nasnet
-from nets.nasnet import pnasnet
 
 slim = tf.contrib.slim
 
@@ -62,7 +61,6 @@ networks_map = {'alexnet_v2': alexnet.alexnet_v2,
                 'nasnet_cifar': nasnet.build_nasnet_cifar,
                 'nasnet_mobile': nasnet.build_nasnet_mobile,
                 'nasnet_large': nasnet.build_nasnet_large,
-				'pnasnet_large': pnasnet.build_pnasnet_large,
                }
 
 arg_scopes_map = {'alexnet_v2': alexnet.alexnet_v2_arg_scope,
@@ -93,7 +91,6 @@ arg_scopes_map = {'alexnet_v2': alexnet.alexnet_v2_arg_scope,
                   'nasnet_cifar': nasnet.nasnet_cifar_arg_scope,
                   'nasnet_mobile': nasnet.nasnet_mobile_arg_scope,
                   'nasnet_large': nasnet.nasnet_large_arg_scope,
-				  'pnasnet_large': pnasnet.pnasnet_large_arg_scope,
                  }
 
 

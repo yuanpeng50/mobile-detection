@@ -20,7 +20,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import copy
 import tensorflow as tf
 
 from nets.nasnet import nasnet_utils
@@ -36,10 +35,11 @@ slim = tf.contrib.slim
 # cosine (single period) learning rate decay
 # auxiliary head loss weighting: 0.4
 # clip global norm of all gradients by 5
-def cifar_config():
+def _cifar_config(is_training=True):
+  drop_path_keep_prob = 1.0 if not is_training else 0.6
   return tf.contrib.training.HParams(
       stem_multiplier=3.0,
-      drop_path_keep_prob=0.6,
+      drop_path_keep_prob=drop_path_keep_prob,
       num_cells=18,
       use_aux_head=1,
       num_conv_filters=32,
@@ -65,14 +65,15 @@ def cifar_config():
 # auxiliary head loss weighting: 0.4
 # label smoothing: 0.1
 # clip global norm of all gradients by 10
-def large_imagenet_config():
+def _large_imagenet_config(is_training=True):
+  drop_path_keep_prob = 1.0 if not is_training else 0.7
   return tf.contrib.training.HParams(
       stem_multiplier=3.0,
       dense_dropout_keep_prob=0.5,
       num_cells=18,
       filter_scaling_rate=2.0,
       num_conv_filters=168,
-      drop_path_keep_prob=0.7,
+      drop_path_keep_prob=drop_path_keep_prob,
       use_aux_head=1,
       num_reduction_layers=2,
       data_format='NHWC',
@@ -91,7 +92,7 @@ def large_imagenet_config():
 # auxiliary head weighting: 0.4
 # label smoothing: 0.1
 # clip global norm of all gradients by 10
-def mobile_imagenet_config():
+def _mobile_imagenet_config():
   return tf.contrib.training.HParams(
       stem_multiplier=1.0,
       dense_dropout_keep_prob=0.5,
@@ -105,12 +106,6 @@ def mobile_imagenet_config():
       skip_reduction_layer_input=0,
       total_training_steps=250000,
   )
-
-
-def _update_hparams(hparams, is_training):
-  """Update hparams for given is_training option."""
-  if not is_training:
-    hparams.set_hparam('drop_path_keep_prob', 1.0)
 
 
 def nasnet_cifar_arg_scope(weight_decay=5e-4,
@@ -284,12 +279,10 @@ def _cifar_stem(inputs, hparams):
   return net, [None, net]
 
 
-def build_nasnet_cifar(images, num_classes,
-                       is_training=True,
-                       config=None):
+def build_nasnet_cifar(
+    images, num_classes, is_training=True):
   """Build NASNet model for the Cifar Dataset."""
-  hparams = cifar_config() if config is None else copy.deepcopy(config)
-  _update_hparams(hparams, is_training)
+  hparams = _cifar_config(is_training=is_training)
 
   if tf.test.is_gpu_available() and hparams.data_format == 'NHWC':
     tf.logging.info('A GPU is available on the machine, consider using NCHW '
@@ -332,12 +325,9 @@ build_nasnet_cifar.default_image_size = 32
 
 def build_nasnet_mobile(images, num_classes,
                         is_training=True,
-                        final_endpoint=None,
-                        config=None):
+                        final_endpoint=None):
   """Build NASNet Mobile model for the ImageNet Dataset."""
-  hparams = (mobile_imagenet_config() if config is None
-             else copy.deepcopy(config))
-  _update_hparams(hparams, is_training)
+  hparams = _mobile_imagenet_config()
 
   if tf.test.is_gpu_available() and hparams.data_format == 'NHWC':
     tf.logging.info('A GPU is available on the machine, consider using NCHW '
@@ -383,12 +373,9 @@ build_nasnet_mobile.default_image_size = 224
 
 def build_nasnet_large(images, num_classes,
                        is_training=True,
-                       final_endpoint=None,
-                       config=None):
+                       final_endpoint=None):
   """Build NASNet Large model for the ImageNet Dataset."""
-  hparams = (large_imagenet_config() if config is None
-             else copy.deepcopy(config))
-  _update_hparams(hparams, is_training)
+  hparams = _large_imagenet_config(is_training=is_training)
 
   if tf.test.is_gpu_available() and hparams.data_format == 'NHWC':
     tf.logging.info('A GPU is available on the machine, consider using NCHW '
@@ -512,7 +499,7 @@ def _build_nasnet_base(images,
   with tf.variable_scope('final_layer'):
     net = tf.nn.relu(net)
     net = nasnet_utils.global_avg_pool(net)
-    if add_and_check_endpoint('global_pool', net) or not num_classes:
+    if add_and_check_endpoint('global_pool', net) or num_classes is None:
       return net, end_points
     net = slim.dropout(net, hparams.dense_dropout_keep_prob, scope='dropout')
     logits = slim.fully_connected(net, num_classes)

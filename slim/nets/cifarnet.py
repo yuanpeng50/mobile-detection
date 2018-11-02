@@ -24,8 +24,6 @@ slim = tf.contrib.slim
 
 trunc_normal = lambda stddev: tf.truncated_normal_initializer(stddev=stddev)
 
-def test():
-    print("aaa")
 
 def cifarnet(images, num_classes=10, is_training=False,
              dropout_keep_prob=0.5,
@@ -106,7 +104,6 @@ def cifarnet_arg_scope(weight_decay=0.004):
   Returns:
     An `arg_scope` to use for the inception v3 model.
   """
-  print("aaa")
   with slim.arg_scope(
       [slim.conv2d],
       weights_initializer=tf.truncated_normal_initializer(stddev=5e-2),

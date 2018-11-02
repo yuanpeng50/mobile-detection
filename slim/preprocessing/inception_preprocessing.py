@@ -263,8 +263,8 @@ def preprocess_for_eval(image, height, width,
     3-D float Tensor of prepared image.
   """
   with tf.name_scope(scope, 'eval_image', [image, height, width]):
-    #if image.dtype != tf.float32:
-    image = tf.image.convert_image_dtype(image, dtype=tf.float32)
+    if image.dtype != tf.float32:
+      image = tf.image.convert_image_dtype(image, dtype=tf.float32)
     # Crop the central region of the image with an area containing 87.5% of
     # the original image.
     if central_fraction:
